@@ -1,5 +1,6 @@
 {
     "showPhone": false,
+    "showPhoneAfter": 4,
     "showEmail": false,
     "shoEmailAfter": 4,
     "showAuth": false
