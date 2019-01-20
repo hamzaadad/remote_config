@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">    
+    <style>
+        body, html{
+            overflow: hidden;
+        }
+        .contact{
+            cursor: pointer;
+        }
+        .selected{
+            background: rgba(32, 137, 235, 0.3)
+        }
+    </style>
+</head>
+<body>
+    
+
+    <div class="container">
+        <h1>SMS Application</h1>
+        <hr/>
+        <div class="row">
+          <div class="col-md-3">
+            <ul id="contacts" class="list-group" style='height: 500px; overflow: scroll'>
+            </ul>
+          </div>
+          <div class="col-md-9">
+            <ul id="smsContact" class="list-group" style='height: 500px; overflow: scroll'>
+
+            </ul>
+          </div>
+        </div>
+      </div>
+    
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) and Bootstrap -->
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <!-- Include Firebase Library and Config-->
+  
+<script src="https://www.gstatic.com/firebasejs/5.8.0/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var selectedId = null;
+  var config = {
+    apiKey: "AIzaSyA2Uuc6uNK7p-c43rkRt9HsWWPXvB9ojEY",
+    authDomain: "selft-fire.firebaseapp.com",
+    databaseURL: "https://selft-fire.firebaseio.com",
+    projectId: "selft-fire",
+    storageBucket: "selft-fire.appspot.com",
+    messagingSenderId: "782818298773"
+  };
+  firebase.initializeApp(config);
+  var dbRef = firebase.database();
+
+
+  var phonesRed = dbRef.ref('registered');
+  phonesRed.once("value").then(function(data){
+    contactHtmlFromObject(data.val())
+  })
+  phonesRed.on("child_changed", (snap) => {
+    console.log("snap on child add", snap.val());
+    phonesRed
+        .once("value")
+        .then(function(data){
+            contactHtmlFromObject(data.val())
+        })
+  });
+
+function contactHtmlFromObject(snap){
+  $('#contacts').empty();
+  $('#smsContact').empty();
+  Object.keys(snap).map(function(key){
+    
+    $('#contacts').append('<li class="list-group-item contact '+ (selectedId ==  key ? 'selected' : '') +'" id="'+key+'"><p>'+snap[key].phone+' ('+snap[key].sms.smsDataList.length+')</p><p>'+snap[key].device_id+'</p></li>');
+   
+    Object.keys(snap[key].sms.smsDataList).map(function(smsKey){
+        var date = new Date(parseInt(snap[key].sms.smsDataList[smsKey].timerecieved));
+        //console.log(snap[key].sms.smsDataList[smsKey].timerecieved);
+        var formatedDate =  date.getFullYear() + "/" + date.getMonth()+1 + "/" +    date.getDate() +  " " +    date.getHours() + ":"   + date.getMinutes();
+       
+        $('#smsContact').append('<li class="list-group-item '+snap[key].sms.smsDataList[smsKey].phone_id+'" '+( selectedId != null && selectedId != snap[key].sms.smsDataList[smsKey].phone_id ? 'style="display:none"' : '') +'><p >'+snap[key].sms.smsDataList[smsKey].sender+' -> '+snap[key].phone+'</p><p class="lead">'+snap[key].sms.smsDataList[smsKey].text+'</p><p style="text-align: right;">'+formatedDate+'</p></li>');
+    })
+
+  })
+  
+
+  
+}
+
+$(document).ready(function(){
+    $(document).on("click", ".contact", function(){
+        $(".contact").removeClass("selected");
+        $(this).addClass("selected");
+        var id = $(this).attr("id");
+        selectedId = id;
+        $('#smsContact > li').each(function(index, elm){
+            //debugger;
+            if(!$(elm).hasClass(id)){
+                //console.log("out", id, $(elm))
+                $(elm).hide();
+            }else if($(elm).is(":hidden")){
+                //console.log("in", id, $(elm))
+                $(elm).show();
+            }
+        });
+    })
+})
+
+
+</script>
+</body>
+</html>
