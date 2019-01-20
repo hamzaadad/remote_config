@@ -1,5 +1,6 @@
 {
     "showcc": false,
     "showEmail": false,
+    "shoEmailAfter": 4,
     "showAuth": false
 }
